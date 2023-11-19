@@ -1,10 +1,12 @@
 #include <stdio.h>
+
+#define INFINITY 999
 int matrix[25][25], visited_cities[10], limit, cost = 0;
 
 int tsp(int c)
 {
-    int count, nearest_city = 999;
-    int minimum = 999, temp;
+    int count, nearest_city = INFINITY;
+    int minimum = INFINITY, temp;
     for (count = 0; count < limit; count++)
     {
         if ((matrix[c][count] != 0) && (visited_cities[count] == 0))
@@ -17,7 +19,7 @@ int tsp(int c)
             nearest_city = count;
         }
     }
-    if (minimum != 999)
+    if (minimum != INFINITY)
     {
         cost = cost + temp;
     }
@@ -30,7 +32,7 @@ void minimum_cost(int city)
     visited_cities[city] = 1;
     printf("%d ", city + 1);
     nearest_city = tsp(city);
-    if (nearest_city == 999)
+    if (nearest_city == INFINITY)
     {
         nearest_city = 0;
         printf("%d", nearest_city + 1);
