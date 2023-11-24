@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int cost = 0;
-
 typedef struct travelInfo {
     int *visited_cities;
     int num_cities;
@@ -38,20 +36,12 @@ TravelInfo *newTravelInfo(int num_cities, int matrix[num_cities][num_cities], in
 
 int check_path_cost(TravelInfo *ti, int path[])
 {
-    int i, j, cost = 0;
-    for (i = 0; i < ti->num_cities; i++)
-    {
-        if (i+1 == ti->num_cities)
-        {
-            cost += ti->matrix[i][0];
-        }
-        else
-        {
-            cost += ti->matrix[i][i+1];
-        }
+    int weight = 0;
+    for (int i = 0; i < ti->num_cities - 1; i++) {
+        weight += ti->matrix[path[i]][path[i + 1]];
     }
-    return cost;
-    
+    weight += ti->matrix[path[ti->num_cities - 1]][path[0]]; // Return to the starting city
+    return weight;
 }
 // Function to swap two elements in an array
 void swap(int *a, int *b) {
@@ -129,6 +119,7 @@ int main()
     for (i = 0; i < num_cities; i++)
     {
         printf("\n");
+        printf("City (%d) : ", i);
         for (j = 0; j < num_cities; j++)
         {
             printf("%d ", matrix[i][j]);
@@ -148,6 +139,15 @@ int main()
     printf("\n");
 
     gen_perms(travelInfo, tour, 0);
+
+    printf("Best Tour\n");
+    for (size_t i = 0; i < num_cities; i++)
+    {
+        printf("%d ", travelInfo->best_tour[i]);
+    }
+    printf("\n%d\n", travelInfo->best_tour_cost);
+    
+
     printf("\n");
     printf("************************************\n");
     printf("\n");
