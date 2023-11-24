@@ -136,17 +136,21 @@ int main()
     }
 
     TravelInfo *travelInfo = newTravelInfo(num_cities, matrix, visited_cities);
-    // int paths[numPermutations][num_cities];
+    
     int tour[num_cities];
     for (int i = 0; i < num_cities; i++) {
         tour[i] = i;
     }
+    printf("\n\n");
+    printf("All Possible Paths:\n");
+    printf("\n");
+    printf("************************************\n");
+    printf("\n");
 
-    for (int i = 0; i < num_cities; i++) {
-        printf("%d ", tour[i]);
-    }
-
-    gen_perms(travelInfo, tour, 1);
-
+    gen_perms(travelInfo, tour, 0);
+    printf("\n");
+    printf("************************************\n");
+    printf("\n");
+    
     return 0;
 }
