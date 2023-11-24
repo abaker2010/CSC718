@@ -1,74 +1,152 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define INFINITY 999
-int matrix[25][25], visited_cities[10], limit, cost = 0;
+int cost = 0;
 
-int tsp(int c)
-{
-    int count, nearest_city = INFINITY;
-    int minimum = INFINITY, temp;
-    for (count = 0; count < limit; count++)
-    {
-        if ((matrix[c][count] != 0) && (visited_cities[count] == 0))
-        {
-            if (matrix[c][count] < minimum)
-            {
-                minimum = matrix[count][0] + matrix[c][count];
-            }
-            temp = matrix[c][count];
-            nearest_city = count;
+typedef struct travelInfo {
+    int *visited_cities;
+    int num_cities;
+    int best_tour_cost;
+    int *best_tour;
+    int **matrix;
+} TravelInfo;
+
+TravelInfo *newTravelInfo(int num_cities, int matrix[num_cities][num_cities], int visited_cities[num_cities]) {
+    TravelInfo *travelInfo = (TravelInfo *) malloc(sizeof(TravelInfo));
+    
+    // Allocate memory for the matrix
+    travelInfo->matrix = (int **) malloc(sizeof(int *) * num_cities);
+    for (int i = 0; i < num_cities; i++) {
+        travelInfo->matrix[i] = (int *) malloc(sizeof(int) * num_cities);
+        for (int j = 0; j < num_cities; j++) {
+            travelInfo->matrix[i][j] = matrix[i][j];
         }
     }
-    if (minimum != INFINITY)
-    {
-        cost = cost + temp;
+    
+    // Allocate memory for the visited_cities array
+    travelInfo->visited_cities = (int *) malloc(sizeof(int) * num_cities);
+    for (int i = 0; i < num_cities; i++) {
+        travelInfo->visited_cities[i] = visited_cities[i];
     }
-    return nearest_city;
+    
+    travelInfo->num_cities = num_cities;
+    travelInfo->best_tour_cost = 0;
+    travelInfo->best_tour = NULL;
+    
+    return travelInfo;
 }
 
-void minimum_cost(int city)
+int check_path_cost(TravelInfo *ti, int path[])
 {
-    int nearest_city;
-    visited_cities[city] = 1;
-    printf("%d ", city + 1);
-    nearest_city = tsp(city);
-    if (nearest_city == INFINITY)
+    int i, j, cost = 0;
+    for (i = 0; i < ti->num_cities; i++)
     {
-        nearest_city = 0;
-        printf("%d", nearest_city + 1);
-        cost = cost + matrix[city][nearest_city];
+        if (i+1 == ti->num_cities)
+        {
+            cost += ti->matrix[i][0];
+        }
+        else
+        {
+            cost += ti->matrix[i][i+1];
+        }
+    }
+    return cost;
+    
+}
+// Function to swap two elements in an array
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void gen_perms(TravelInfo *ti, int path[], int currentIndex) {
+    if (currentIndex == ti->num_cities - 1) {
+        // Calculate the weight of the current path
+        int currentWeight = check_path_cost(ti, path);
+
+        if (ti->best_tour == NULL || currentWeight < ti->best_tour_cost) {
+            ti->best_tour_cost = currentWeight;
+            free(ti->best_tour);
+            ti->best_tour = malloc(sizeof(int) * (ti->num_cities));
+            for (int i = 0; i < ti->num_cities; i++) {
+                ti->best_tour[i] = path[i];
+            }
+        }
+        // Print the current path and its weight
+        printf("Path: ");
+        for (int i = 0; i < ti->num_cities; i++) {
+            printf("%d ", path[i]);
+        }
+        printf("-> Total Weight: %d\n", currentWeight);
+
+        // return currentWeight;
         return;
     }
-    minimum_cost(nearest_city);
-}
+
+    for (int i = currentIndex; i < ti->num_cities; i++) {
+        // Swap the current element with itself and all the subsequent elements
+        swap(&path[currentIndex], &path[i]);
+
+        // Recursively generate paths
+        gen_perms(ti, path, currentIndex + 1);
+
+        // Backtrack
+        swap(&path[currentIndex], &path[i]);
+    }
+    
+}   
+
 
 int main()
 {
-    int i, j;
+    int i, j, num_cities;
+
     printf("Enter Total Number of Cities:\t");
-    scanf("%d", &limit);
+    scanf("%d", &num_cities);
+
+    // Calculate the number of permutations (numCities!)
+    int numPermutations = 1;
+    for (int i = num_cities - 1; i > 1; i--) {
+        numPermutations *= i;
+    }
+
+
+    int matrix[num_cities][num_cities];
+    int tours[numPermutations][num_cities];
+    int visited_cities[num_cities];
+
     printf("\nEnter Cost Matrix\n");
-    for (i = 0; i < limit; i++)
+    for (i = 0; i < num_cities; i++)
     {
-        printf("\nEnter %d Elements in Row[%d]\n", limit, i + 1);
-        for (j = 0; j < limit; j++)
+        printf("\nEnter %d Elements in Row[%d]\n", num_cities, i + 1);
+        for (j = 0; j < num_cities; j++)
         {
             scanf("%d", &matrix[i][j]);
         }
-        visited_cities[i] = 0;
     }
     printf("\nEntered Cost Matrix\n");
-    for (i = 0; i < limit; i++)
+    for (i = 0; i < num_cities; i++)
     {
         printf("\n");
-        for (j = 0; j < limit; j++)
+        for (j = 0; j < num_cities; j++)
         {
             printf("%d ", matrix[i][j]);
         }
     }
-    printf("\n\nPath:\t");
-    minimum_cost(0);
-    printf("\n\nMinimum Cost: \t");
-    printf("%d\n", cost);
+
+    TravelInfo *travelInfo = newTravelInfo(num_cities, matrix, visited_cities);
+    // int paths[numPermutations][num_cities];
+    int tour[num_cities];
+    for (int i = 0; i < num_cities; i++) {
+        tour[i] = i;
+    }
+
+    for (int i = 0; i < num_cities; i++) {
+        printf("%d ", tour[i]);
+    }
+
+    gen_perms(travelInfo, tour, 1);
+
     return 0;
 }
