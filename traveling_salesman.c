@@ -34,7 +34,7 @@ TravelInfo *newTravelInfo(int num_cities, int matrix[num_cities][num_cities]) {
     TravelInfo *travelInfo = (TravelInfo *) malloc(sizeof(TravelInfo));
     
     travelInfo->num_cities = num_cities;
-    travelInfo->total_tours = factorial(num_cities);
+    travelInfo->total_tours = factorial(num_cities-1);
     travelInfo->best_tour_cost = -1;
     travelInfo->current_tour = 0;
 
@@ -117,9 +117,7 @@ Tour* get_best_tours(TravelInfo *ti) {
 }
 // Function to print the best tours
 void print_best_tours(Tour *best_tours, int num_cities) {
-    for (int i = 0; i < num_cities; i++) {
-        print_path_with_weight(best_tours[i].path, best_tours[i].weight, num_cities);
-    }
+    print_path_with_weight(best_tours[0].path, best_tours[0].weight, num_cities);
 }
 
 // Function to generate all possible paths, get weight of each path, and store the best path
@@ -190,7 +188,7 @@ int main()
         starting_tour[i] = i;
     }
 
-    gen_perms(travelInfo, starting_tour, 0);
+    gen_perms(travelInfo, starting_tour, 1);
     printf("\n");
     printf("************************************\n");
     printf("All Possible Paths\n");
@@ -210,7 +208,6 @@ int main()
     printf("************************************\n");
     Tour *best_tours = get_best_tours(travelInfo);
     print_best_tours(best_tours, travelInfo->num_cities);
-    printf("\n");
     printf("************************************\n");
         
     return 0;
