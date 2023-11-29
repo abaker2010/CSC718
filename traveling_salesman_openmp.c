@@ -27,7 +27,7 @@ typedef struct travelInfo {
     int best_tour_cost;
     int current_tour;
     int total_tours;
-    Tour *all_tours;
+    Tour *best_tour;
 } TravelInfo;
 
 TravelInfo *newTravelInfo(int num_cities, int matrix[num_cities][num_cities]) {
@@ -36,12 +36,11 @@ TravelInfo *newTravelInfo(int num_cities, int matrix[num_cities][num_cities]) {
     travelInfo->num_cities = num_cities;
     travelInfo->total_tours = factorial(num_cities-1);
     travelInfo->best_tour_cost = -1;
-    travelInfo->current_tour = 0;
 
     // Allocate memory for the matrix
     travelInfo->matrix = (int **) malloc(sizeof(int *) * travelInfo->num_cities);
-    // Allocate memory for the all_tours array
-    travelInfo->all_tours = (Tour *) malloc(sizeof(Tour) * travelInfo->total_tours);
+    
+    travelInfo->best_tour = (Tour *) malloc(sizeof(Tour));
 
     // Initialize the matrix, visited_cities, best_tour_cost, and best_tours arrays
     for (int i = 0; i < num_cities; i++) {    
@@ -74,15 +73,16 @@ int check_path_cost(TravelInfo *ti, int path[])
     weight += ti->matrix[path[ti->num_cities - 1]][path[0]]; // Return to the starting city
     return weight;
 }
-// Function to save the path and weight for useage later
-void save_path_and_weight(TravelInfo *ti, int path[], int weight) {
-    int *newPath = (int *) malloc(sizeof(int) * ti->num_cities);
-    for (int i = 0; i < ti->num_cities; i++) {
-        newPath[i] = path[i];
+
+void update_best_tour(TravelInfo *ti, int path[], int weight) {
+    if (ti->best_tour_cost == -1 || weight < ti->best_tour_cost) {
+        ti->best_tour_cost = weight;
+        free(ti->best_tour);
+        ti->best_tour = newTour(path, weight);
     }
-    ti->all_tours[ti->current_tour] = *newTour(newPath, weight);
-    ti->current_tour++;
 }
+
+
 // Function to set the best tour cost
 void set_best_tour_cost(TravelInfo *ti, int weight) {
     if(ti->best_tour_cost == -1 || weight < ti->best_tour_cost) {
@@ -97,24 +97,7 @@ void print_path_with_weight(int path[], int weight, int num_cities) {
     }
     printf("-> Total Weight: %d\n", weight);
 }
-// Function to print the path and weight of each tour from the travel info
-void print_ti_path_weight(TravelInfo *ti) {
-    for (int i = 0; i < ti->current_tour; i++) {
-        print_path_with_weight(ti->all_tours[i].path, ti->all_tours[i].weight, ti->num_cities);
-    }
-}
-// Function to get the best tours from the travel info
-Tour* get_best_tours(TravelInfo *ti) {
-    Tour *best_tours = (Tour *) malloc(sizeof(Tour) * ti->num_cities);
-    int best_tour_count = 0;
-    for (int i = 0; i < ti->current_tour; i++) {
-        if (ti->all_tours[i].weight == ti->best_tour_cost) {
-            best_tours[best_tour_count] = ti->all_tours[i];
-            best_tour_count++;
-        }
-    }
-    return best_tours;
-}
+
 // Function to print the best tours
 void print_best_tours(Tour *best_tours, int num_cities) {
     print_path_with_weight(best_tours[0].path, best_tours[0].weight, num_cities);
@@ -126,8 +109,10 @@ void gen_perms(TravelInfo *ti, int path[], int currentIndex) {
         // Calculate the weight of the current path
         int currentWeight = check_path_cost(ti, path);
         // Save the path and weight for useage later
-        save_path_and_weight(ti, path, currentWeight);
-        set_best_tour_cost(ti, currentWeight);
+        // save_path_and_weight(ti, path, currentWeight);
+        // set_best_tour_cost(ti, currentWeight);
+        update_best_tour(ti, path, currentWeight);
+        
         return;
     }
 
@@ -194,20 +179,18 @@ int main()
     printf("All Possible Paths\n");
     printf("************************************\n");
     printf("General Info\n");
-    printf("  - Tours Tried: %d\n", travelInfo->current_tour);
-    printf("  - Total Tours Expected: %d\n", travelInfo->total_tours);
     printf("  - Best Tour Cost: %d\n", travelInfo->best_tour_cost);
     printf("************************************\n");
 
-    print_ti_path_weight(travelInfo);
+    // print_ti_path_weight(travelInfo);
 
     
     printf("\n");
     printf("************************************\n");
     printf("Best Tour Paths\n");
     printf("************************************\n");
-    Tour *best_tours = get_best_tours(travelInfo);
-    print_best_tours(best_tours, travelInfo->num_cities);
+    // Tour *best_tours = get_best_tours(travelInfo);
+    print_best_tours(travelInfo->best_tour, travelInfo->num_cities);
     printf("************************************\n");
         
     return 0;
