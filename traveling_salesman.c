@@ -34,6 +34,53 @@ typedef struct travelInfo {
     Tour *best_tour;
 } TravelInfo;
 
+// Function to print formatted path and weight
+void print_tour(Tour *tour, uint8_t num_cities) {
+    printf("Path: ");
+    for (uint8_t i = 0; i < num_cities; i++) {
+        printf("%u ", tour->path[i]);
+    }
+    printf("0 -> Total Weight: %d\n", tour->weight);
+}
+
+void initMinTour(TravelInfo *ti) {
+    int visited[ti->num_cities];
+    int bestWeight;
+    int totalWeight = 0;
+    int curWeight;
+
+    for (uint8_t i = 0; i < ti->num_cities; i++) {
+        visited[i] = 0;
+    }
+
+    // make sure first element = 0
+    ti->best_tour->path[0] = 0;
+    // iterate over path, skipping over 0
+    for (uint8_t i = 1; i < ti->num_cities; i++) {
+        bestWeight = -1;
+        // iterate over cities
+        for (uint8_t j = 1; j < ti->num_cities; j++) {
+            if (visited[j] || j == ti->best_tour->path[i-1])
+                continue;
+
+            curWeight = ti->matrix[ti->best_tour->path[i-1]][j];
+            if (curWeight < bestWeight || bestWeight == -1) {
+                bestWeight = curWeight;
+                ti->best_tour->path[i] = j;
+            }
+        }
+        visited[ti->best_tour->path[i]] = 1;
+
+        totalWeight += bestWeight;
+    }
+
+    // add return trip
+    totalWeight += ti->matrix[ti->best_tour->path[ti->num_cities - 1]][0];
+    ti->best_tour->weight = totalWeight;
+    ti->best_tour_cost = totalWeight;
+    print_tour(ti->best_tour, ti->num_cities);
+}
+
 TravelInfo *newTravelInfo(uint8_t num_cities, int matrix[num_cities][num_cities]) {
     TravelInfo *travelInfo = (TravelInfo *) malloc(sizeof(TravelInfo));
     
@@ -52,7 +99,6 @@ TravelInfo *newTravelInfo(uint8_t num_cities, int matrix[num_cities][num_cities]
     // Initialize the matrix, visited_cities, best_tour_cost, and best_tours arrays
     for (uint8_t i = 0; i < num_cities; i++) {    
         travelInfo->matrix[i] = (int *) malloc(sizeof(int) * travelInfo->num_cities);
-        travelInfo->best_tour->path[i] = i;
         for (uint8_t j = 0; j < travelInfo->num_cities; j++) {
             if (j == travelInfo->num_cities) {
                 travelInfo->matrix[i][j] = 0;
@@ -61,6 +107,8 @@ TravelInfo *newTravelInfo(uint8_t num_cities, int matrix[num_cities][num_cities]
             }
         }
     }
+
+    initMinTour(travelInfo);
     return travelInfo;
 }
 
@@ -69,14 +117,6 @@ void swap(uint8_t *a, uint8_t *b) {
     uint8_t temp = *a;
     *a = *b;
     *b = temp;
-}
-// Function to print formatted path and weight
-void print_tour(Tour *tour, uint8_t num_cities) {
-    printf("Path: ");
-    for (uint8_t i = 0; i < num_cities; i++) {
-        printf("%u ", tour->path[i]);
-    }
-    printf("0 -> Total Weight: %d\n", tour->weight);
 }
 
 // Function to calculate the total weight of a path
@@ -118,7 +158,7 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
     }
 
     // Note: can replace ti->best_tour_cost with ti->best_tour->weight
-    if (currentWeight > ti->best_tour_cost && ti->best_tour_cost != -1) {
+    if (currentWeight >= ti->best_tour_cost && ti->best_tour_cost != -1) {
         return;
     }
 
