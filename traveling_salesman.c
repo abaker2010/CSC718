@@ -160,10 +160,10 @@ int main()
     for (i = 0; i < num_cities; i++)
     {
         
-        printf("  City (%u) : ", i);
+        printf("  City (%3u) : ", i);
         for (j = 0; j < num_cities; j++)
         {
-            printf("%d ", matrix[i][j]);
+            printf("%3d ", matrix[i][j]);
         }
         printf("\n");
     }
