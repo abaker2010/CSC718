@@ -159,12 +159,14 @@ void set_best_tour_cost(TravelInfo *ti, int weight) {
 
 // Function to generate all possible paths, get weight of each path, and store the best path
 Tour gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIndex, int currentWeight) {
+    uint8_t l_path[ti->num_cities];
+    memcpy(l_path, path, ti->num_cities * sizeof(uint8_t));
     if (currentIndex == ti->num_cities - 1) {
         // Calculate the weight of the current path
         //update_best_tour(ti, path, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]]);
-        if (best_tour.weight > currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]]) {
-            best_tour.weight = currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]];
-            memcpy(best_tour.path, path, ti->num_cities * sizeof(uint8_t));
+        if (best_tour.weight > currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]] + ti->matrix[l_path[currentIndex]][l_path[0]]) {
+            best_tour.weight = currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]] + ti->matrix[l_path[currentIndex]][l_path[0]];
+            memcpy(best_tour.path, l_path, ti->num_cities * sizeof(uint8_t));
             printf("  - New Best Tour\n");
             print_tour(&best_tour, ti->num_cities);
         }
@@ -177,18 +179,16 @@ Tour gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIn
         return best_tour;
     }
 
-    #pragma omp parallel private(path) if(currentIndex == (ti->num_cities / 4))
+    #pragma omp parallel private(l_path, currentIndex, currentWeight) if(currentIndex == (ti->num_cities / 4))
     {
-        uint8_t path[ti->num_cities];
-
-        #pragma omp for schedule(dynamic, 1) reduction(merge: best_tour) 
+        #pragma omp for reduction(merge: best_tour) 
         for (uint8_t i = currentIndex; i < ti->num_cities; i++) {
             // Swap the current element with itself and all the subsequent elements
-            swap(&path[currentIndex], &path[i]);
+            swap(&l_path[currentIndex], &l_path[i]);
             // Recursively generate paths
-            best_tour = gen_perms(ti, best_tour, path, currentIndex + 1, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]]);
+            best_tour = gen_perms(ti, best_tour, l_path, currentIndex + 1, currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]]);
             // Backtrack
-            swap(&path[currentIndex], &path[i]);
+            swap(&l_path[currentIndex], &l_path[i]);
         }
     }
 
