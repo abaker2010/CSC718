@@ -241,7 +241,7 @@ int main()
     }
 
     Tour best_tour;
-    memcpy(best_tour.path, travelInfo->best_tour->path, num_cities * sizeof(uint8_t));
+    memcpy(&(best_tour.path), travelInfo->best_tour->path, num_cities * sizeof(uint8_t));
     best_tour.weight = travelInfo->best_tour->weight;
 
     // travelInfo->best_tour = (Tour *) malloc(sizeof(Tour));
