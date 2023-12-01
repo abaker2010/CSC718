@@ -95,7 +95,6 @@ TravelInfo *newTravelInfo(uint8_t num_cities, int matrix[num_cities][num_cities]
     travelInfo->num_cities = num_cities;
     
     travelInfo->max_tours = double_factorial(num_cities-1);
-    travelInfo->best_tour->weight = -1;
 
     // Allocate memory for the matrix
     travelInfo->matrix = (int **) malloc(sizeof(int *) * num_cities);
