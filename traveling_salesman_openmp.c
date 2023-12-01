@@ -158,7 +158,7 @@ void set_best_tour_cost(TravelInfo *ti, int weight) {
 }
 
 // Function to generate all possible paths, get weight of each path, and store the best path
-void gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIndex, int currentWeight) {
+Tour gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIndex, int currentWeight) {
     if (currentIndex == ti->num_cities - 1) {
         // Calculate the weight of the current path
         //update_best_tour(ti, path, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]]);
@@ -169,12 +169,12 @@ void gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIn
             print_tour(&best_tour, ti->num_cities);
         }
         
-        return;
+        return best_tour;
     }
 
     // Note: can replace ti->best_tour_cost with ti->best_tour->weight
     if (currentWeight >= best_tour.weight && best_tour.weight != -1) {
-        return;
+        return best_tour;
     }
 
     #pragma omp parallel private(path) if(currentIndex == (ti->num_cities / 4))
@@ -186,11 +186,13 @@ void gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIn
             // Swap the current element with itself and all the subsequent elements
             swap(&path[currentIndex], &path[i]);
             // Recursively generate paths
-            gen_perms(ti, best_tour, path, currentIndex + 1, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]]);
+            best_tour = gen_perms(ti, best_tour, path, currentIndex + 1, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]]);
             // Backtrack
             swap(&path[currentIndex], &path[i]);
         }
     }
+
+    return best_tour;
 }   
 
 int main()
@@ -252,13 +254,13 @@ int main()
     printf(" - Max Tours: %f\n", travelInfo->max_tours);
     printf("************************************\n");
 
-    gen_perms(travelInfo, best_tour, starting_tour, 1, 0);
+    best_tour = gen_perms(travelInfo, best_tour, starting_tour, 1, 0);
     printf("\n");
     printf("************************************\n");
     printf("All Possible Paths\n");
     printf("************************************\n");
     printf("General Info\n");
-    printf("  - Best Tour Cost: %d\n", travelInfo->best_tour->weight);
+    printf("  - Best Tour Cost: %d\n", best_tour.weight);
     printf("************************************\n");
     
     printf("\n");
@@ -267,7 +269,7 @@ int main()
     printf("************************************\n");
     // Tour *best_tours = get_best_tours(travelInfo);
 
-    print_tour(travelInfo->best_tour, travelInfo->num_cities);
+    print_tour(&best_tour, travelInfo->num_cities);
     printf("************************************\n");
         
     return 0;
