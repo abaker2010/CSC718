@@ -172,14 +172,19 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
         return;
     }
 
-    #pragma omp parallel for private(path) schedule(dynamic, 1) reduction(merge: best_tour) if(currentIndex == (ti->num_cities / 4))
-    for (uint8_t i = currentIndex; i < ti->num_cities; i++) {
-        // Swap the current element with itself and all the subsequent elements
-        swap(&path[currentIndex], &path[i]);
-        // Recursively generate paths
-        gen_perms(ti, path, currentIndex + 1, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]]);
-        // Backtrack
-        swap(&path[currentIndex], &path[i]);
+    #pragma omp parallel private(path) if(currentIndex == (ti->num_cities / 4))
+    {
+        uint8_t path[ti->num_cities];
+
+        #pragma omp for schedule(dynamic, 1) reduction(merge: best_tour) 
+        for (uint8_t i = currentIndex; i < ti->num_cities; i++) {
+            // Swap the current element with itself and all the subsequent elements
+            swap(&path[currentIndex], &path[i]);
+            // Recursively generate paths
+            gen_perms(ti, path, currentIndex + 1, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]]);
+            // Backtrack
+            swap(&path[currentIndex], &path[i]);
+        }
     }
 }   
 
