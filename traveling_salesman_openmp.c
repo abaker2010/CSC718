@@ -20,6 +20,7 @@ double double_factorial(unsigned int n)
     return (double) n * double_factorial(n - 1);
 }
 
+
 typedef struct tour {
     uint8_t *path;
     int weight;
@@ -32,6 +33,7 @@ Tour *merge_tours(Tour *tour1, Tour *tour2) {
         return tour2;
     }
 }
+#pragma omp declare reduction (merge : Tour * : omp_out = merge_tours(omp_out, omp_in))
 
 typedef struct travelInfo {
     uint8_t num_cities;
@@ -136,7 +138,7 @@ int check_path_cost(TravelInfo *ti, int path[])
     return weight;
 }
 
-// #pragma omp declare reduction (merge : Tour * : omp_out = merge_tours(omp_out, omp_in)) initializer(omp_priv = NULL)
+
 void update_best_tour(TravelInfo *ti, uint8_t path[], int weight) {
     if (ti->best_tour->weight == -1 || weight < ti->best_tour->weight) {
         // note: ti->best_tour_cost is not needed
@@ -157,6 +159,7 @@ void set_best_tour_cost(TravelInfo *ti, int weight) {
 
 // Function to generate all possible paths, get weight of each path, and store the best path
 void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int currentWeight) {
+    Tour *best_tour = ti->best_tour;
     if (currentIndex == ti->num_cities - 1) {
         // Calculate the weight of the current path
         update_best_tour(ti, path, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]]);
@@ -165,11 +168,11 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
     }
 
     // Note: can replace ti->best_tour_cost with ti->best_tour->weight
-    if (currentWeight >= ti->best_tour->weight && ti->best_tour->weight != -1) {
+    if (currentWeight >= best_tour->weight && best_tour->weight != -1) {
         return;
     }
 
-    // #pragma omp parallel for private(path) schedule(dynamic, 1) if(currentIndex == (num_cities / 4))
+    #pragma omp parallel for private(path) schedule(dynamic, 1) reduction(merge: best_tour) if(currentIndex == (ti->num_cities / 4))
     for (uint8_t i = currentIndex; i < ti->num_cities; i++) {
         // Swap the current element with itself and all the subsequent elements
         swap(&path[currentIndex], &path[i]);
