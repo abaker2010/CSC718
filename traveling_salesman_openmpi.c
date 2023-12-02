@@ -1,9 +1,15 @@
+#include <mpi.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
 #include <sys/types.h>
+
+#define BLOCK_LOW(id, p, n) ((id) * (n) / (p))
+#define BLOCK_HIGH(id, p, n) (BLOCK_LOW((id) + 1, p, n) - 1)
+#define BLOCK_SIZE(id, p, n) (BLOCK_LOW((id) + 1, p, n) - BLOCK_LOW(id, p, n))
+#define BLOCK_OWNER(index, p, n) (((p) * ((index) + 1) - 1) / (n))
 
 unsigned int factorial(unsigned int n)
 {
@@ -172,7 +178,7 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
     }
 }   
 
-int main()
+int main(int argc, char *argv[])
 {
     uint8_t i, j, num_cities;
 
@@ -222,7 +228,49 @@ int main()
     printf(" - Max Tours: %f\n", travelInfo->max_tours);
     printf("************************************\n");
 
-    gen_perms(travelInfo, starting_tour, 1, 0);
+    MPI_Init(&argc, &argv);
+    int id, num_process;
+    MPI_Comm_rank(MPI_COMM_WORLD, &id);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_process);
+
+    int low = 1 + BLOCK_LOW(id, num_process, travelInfo->max_tours - 1);
+    int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->max_tours - 1);
+    int size = BLOCK_SIZE(id, num_process, travelInfo->max_tours - 1);
+
+
+    for (int i = low; i <= high; i++) {
+        // printf("  - Process %d: %d\n", id, i);
+
+        if (starting_tour[1] != i) {
+            for (int j = 2; j < num_cities; j++) {
+                if (starting_tour[j] == i) {
+                    swap(&starting_tour[1], &starting_tour[j]);
+                    break;
+                }
+            }
+        }
+        gen_perms(travelInfo, starting_tour, 2, ti->best_tour->weight);
+
+    }
+
+    if (id != 0) {
+        MPI_Send(&travelInfo->best_tour_cost, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
+    } else {
+        int best_tour_cost;
+        uint8_t best_tour_path[num_cities];
+        for (int i = 1; i < num_process; i++) {
+            MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            if (best_tour_cost < travelInfo->best_tour_cost) {
+                travelInfo->best_tour_cost = best_tour_cost;
+                memcpy(travelInfo->best_tour->path, best_tour_path, num_cities * sizeof(uint8_t));
+                travelInfo->best_tour->weight = best_tour_cost;
+            }
+        }
+    }
+    MPI_Finalize();
+
     printf("\n");
     printf("************************************\n");
     printf("All Possible Paths\n");
