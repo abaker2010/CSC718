@@ -83,7 +83,6 @@ void initMinTour(TravelInfo *ti) {
     // add return trip
     totalWeight += ti->matrix[ti->best_tour->path[ti->num_cities - 1]][0];
     ti->best_tour->weight = totalWeight;
-    ti->best_tour_cost = totalWeight;
     print_tour(ti->best_tour, ti->num_cities);
 }
 
@@ -142,13 +141,6 @@ void update_best_tour(TravelInfo *ti, uint8_t path[], int weight) {
         ti->best_tour->weight = weight;
         printf("  - New Best Tour\n");
         //print_tour(ti->best_tour, ti->num_cities);
-    }
-}
-
-// Function to set the best tour cost
-void set_best_tour_cost(TravelInfo *ti, int weight) {
-    if(ti->best_tour_cost == -1 || weight < ti->best_tour_cost) {
-        ti->best_tour_cost = weight;
     }
 }
 
