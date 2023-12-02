@@ -146,7 +146,7 @@ void update_best_tour(TravelInfo *ti, uint8_t path[], int weight) {
         memcpy(ti->best_tour->path, path, ti->num_cities * sizeof(uint8_t));
         ti->best_tour->weight = weight;
         printf("  - New Best Tour\n");
-        print_tour(ti->best_tour, ti->num_cities);
+        //print_tour(ti->best_tour, ti->num_cities);
     }
 }
 
@@ -164,11 +164,13 @@ Tour gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIn
     if (currentIndex == ti->num_cities - 1) {
         // Calculate the weight of the current path
         //update_best_tour(ti, path, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]]);
-        if (best_tour.weight > currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]] + ti->matrix[l_path[currentIndex]][l_path[0]]) {
-            best_tour.weight = currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]] + ti->matrix[l_path[currentIndex]][l_path[0]];
+        int totalWeight = currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]];
+        totalWeight += ti->matrix[l_path[currentIndex]][0];
+        if (best_tour.weight < totalWeight || best_tour.weight == -1) {
+            best_tour.weight = totalWeight;
             memcpy(best_tour.path, l_path, ti->num_cities * sizeof(uint8_t));
-            printf("  - New Best Tour\n");
-            print_tour(&best_tour, ti->num_cities);
+            //printf("  - New Best Tour\n");
+            //print_tour(&best_tour, ti->num_cities);
         }
         
         return best_tour;
