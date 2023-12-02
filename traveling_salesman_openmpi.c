@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        gen_perms(travelInfo, starting_tour, 2, ti->best_tour->weight);
+        gen_perms(travelInfo, starting_tour, 2, travelInfo->best_tour->weight);
 
     }
 
