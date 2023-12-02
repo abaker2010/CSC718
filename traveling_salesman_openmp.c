@@ -20,25 +20,15 @@ double double_factorial(unsigned int n)
     return (double) n * double_factorial(n - 1);
 }
 
-
 typedef struct tour {
     uint8_t *path;
     int weight;
 } Tour;
 
-Tour merge_tours(Tour tour1, Tour tour2) {
-    if (tour1.weight < tour2.weight) {
-        return tour1;
-    } else {
-        return tour2;
-    }
-}
-#pragma omp declare reduction (merge : Tour : omp_out = merge_tours(omp_out, omp_in))
-
 typedef struct travelInfo {
     uint8_t num_cities;
     int **matrix;
-    // int best_tour_cost;
+    int best_tour_cost;
     int current_tour;
     double max_tours;
     Tour *best_tour;
@@ -87,7 +77,7 @@ void initMinTour(TravelInfo *ti) {
     // add return trip
     totalWeight += ti->matrix[ti->best_tour->path[ti->num_cities - 1]][0];
     ti->best_tour->weight = totalWeight;
-    // ti->best_tour_cost = totalWeight;
+    ti->best_tour_cost = totalWeight;
     print_tour(ti->best_tour, ti->num_cities);
 }
 
@@ -97,6 +87,7 @@ TravelInfo *newTravelInfo(uint8_t num_cities, int matrix[num_cities][num_cities]
     travelInfo->num_cities = num_cities;
     
     travelInfo->max_tours = double_factorial(num_cities-1);
+    travelInfo->best_tour_cost = -1;
 
     // Allocate memory for the matrix
     travelInfo->matrix = (int **) malloc(sizeof(int *) * num_cities);
@@ -127,6 +118,7 @@ void swap(uint8_t *a, uint8_t *b) {
     *a = *b;
     *b = temp;
 }
+
 // Function to calculate the total weight of a path
 int check_path_cost(TravelInfo *ti, int path[])
 {
@@ -138,63 +130,46 @@ int check_path_cost(TravelInfo *ti, int path[])
     return weight;
 }
 
-
 void update_best_tour(TravelInfo *ti, uint8_t path[], int weight) {
-    if (ti->best_tour->weight == -1 || weight < ti->best_tour->weight) {
+    if (ti->best_tour_cost == -1 || weight < ti->best_tour_cost) {
         // note: ti->best_tour_cost is not needed
-        ti->best_tour->weight = weight;
+        ti->best_tour_cost = weight;
         memcpy(ti->best_tour->path, path, ti->num_cities * sizeof(uint8_t));
         ti->best_tour->weight = weight;
         printf("  - New Best Tour\n");
-        //print_tour(ti->best_tour, ti->num_cities);
+        print_tour(ti->best_tour, ti->num_cities);
     }
 }
 
 // Function to set the best tour cost
 void set_best_tour_cost(TravelInfo *ti, int weight) {
-    if(ti->best_tour->weight == -1 || weight < ti->best_tour->weight) {
-        ti->best_tour->weight = weight;
+    if(ti->best_tour_cost == -1 || weight < ti->best_tour_cost) {
+        ti->best_tour_cost = weight;
     }
 }
 
 // Function to generate all possible paths, get weight of each path, and store the best path
-Tour gen_perms(TravelInfo *ti, Tour best_tour, uint8_t path[], uint8_t currentIndex, int currentWeight) {
-    uint8_t l_path[ti->num_cities];
-    memcpy(l_path, path, ti->num_cities * sizeof(uint8_t));
+void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int currentWeight) {
     if (currentIndex == ti->num_cities - 1) {
-        // Calculate the weight of the current path
-        //update_best_tour(ti, path, currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]]);
-        int totalWeight = currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]];
-        totalWeight += ti->matrix[l_path[currentIndex]][0];
-        if (best_tour.weight < totalWeight || best_tour.weight == -1) {
-            best_tour.weight = totalWeight;
-            memcpy(best_tour.path, l_path, ti->num_cities * sizeof(uint8_t));
-            //printf("  - New Best Tour\n");
-            //print_tour(&best_tour, ti->num_cities);
+        int totalWeight = currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]];
+        #pragma omp critical
+        {
+            update_best_tour(ti, path, totalWeight);
         }
-        
-        return best_tour;
+        return;
     }
 
-    // Note: can replace ti->best_tour_cost with ti->best_tour->weight
-    if (currentWeight >= best_tour.weight && best_tour.weight != -1) {
-        return best_tour;
+    if (currentWeight >= ti->best_tour_cost && ti->best_tour_cost != -1) {
+        return;
     }
 
-    #pragma omp parallel private(l_path, currentIndex, currentWeight) if(currentIndex == (ti->num_cities / 4))
-    {
-        #pragma omp for reduction(merge: best_tour) 
-        for (uint8_t i = currentIndex; i < ti->num_cities; i++) {
-            // Swap the current element with itself and all the subsequent elements
-            swap(&l_path[currentIndex], &l_path[i]);
-            // Recursively generate paths
-            best_tour = gen_perms(ti, best_tour, l_path, currentIndex + 1, currentWeight + ti->matrix[l_path[currentIndex - 1]][l_path[currentIndex]]);
-            // Backtrack
-            swap(&l_path[currentIndex], &l_path[i]);
-        }
+    #pragma omp parallel for
+    for (uint8_t i = currentIndex; i < ti->num_cities; i++) {
+        uint8_t newPath[ti->num_cities];
+        memcpy(newPath, path, ti->num_cities * sizeof(uint8_t));
+        swap(&newPath[currentIndex], &newPath[i]);
+        gen_perms(ti, newPath, currentIndex + 1, currentWeight + ti->matrix[newPath[currentIndex - 1]][newPath[currentIndex]]);
     }
-
-    return best_tour;
 }   
 
 int main()
@@ -244,26 +219,16 @@ int main()
         starting_tour[i] = i;
     }
 
-    Tour best_tour;
-    best_tour.path = malloc(num_cities * sizeof(uint8_t));
-    memcpy(best_tour.path, travelInfo->best_tour->path, num_cities * sizeof(uint8_t));
-    best_tour.weight = travelInfo->best_tour->weight;
-
-    // travelInfo->best_tour = (Tour *) malloc(sizeof(Tour));
-    // travelInfo->best_tour->path = (uint8_t *) malloc(sizeof(uint8_t) * num_cities);
-    // travelInfo->best_tour->weight = -1;
-
-
     printf(" - Max Tours: %f\n", travelInfo->max_tours);
     printf("************************************\n");
 
-    best_tour = gen_perms(travelInfo, best_tour, starting_tour, 1, 0);
+    gen_perms(travelInfo, starting_tour, 1, 0);
     printf("\n");
     printf("************************************\n");
     printf("All Possible Paths\n");
     printf("************************************\n");
     printf("General Info\n");
-    printf("  - Best Tour Cost: %d\n", best_tour.weight);
+    printf("  - Best Tour Cost: %d\n", travelInfo->best_tour_cost);
     printf("************************************\n");
     
     printf("\n");
@@ -271,8 +236,7 @@ int main()
     printf("Best Tour Paths\n");
     printf("************************************\n");
     // Tour *best_tours = get_best_tours(travelInfo);
-
-    print_tour(&best_tour, travelInfo->num_cities);
+    print_tour(travelInfo->best_tour, travelInfo->num_cities);
     printf("************************************\n");
         
     return 0;
