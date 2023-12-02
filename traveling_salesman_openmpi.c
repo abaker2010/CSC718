@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
     }
 
     if (id != 0) {
-        MPI_Send(&travelInfo->best_tour_cost, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
     } else {
         int best_tour_cost;
