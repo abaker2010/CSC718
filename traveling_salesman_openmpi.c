@@ -34,7 +34,7 @@ typedef struct tour {
 typedef struct travelInfo {
     uint8_t num_cities;
     int **matrix;
-    int best_tour_cost;
+//    int best_tour_cost;
     int current_tour;
     double max_tours;
     Tour *best_tour;
@@ -93,7 +93,7 @@ TravelInfo *newTravelInfo(uint8_t num_cities, int matrix[num_cities][num_cities]
     travelInfo->num_cities = num_cities;
     
     travelInfo->max_tours = double_factorial(num_cities-1);
-    travelInfo->best_tour_cost = -1;
+    //travelInfo->best_tour_cost = -1;
 
     // Allocate memory for the matrix
     travelInfo->matrix = (int **) malloc(sizeof(int *) * num_cities);
@@ -137,13 +137,11 @@ int check_path_cost(TravelInfo *ti, int path[])
 }
 
 void update_best_tour(TravelInfo *ti, uint8_t path[], int weight) {
-    if (ti->best_tour_cost == -1 || weight < ti->best_tour_cost) {
-        // note: ti->best_tour_cost is not needed
-        ti->best_tour_cost = weight;
+    if (ti->best_tour->weight == -1 || weight < ti->best_tour->weight) {
         memcpy(ti->best_tour->path, path, ti->num_cities * sizeof(uint8_t));
         ti->best_tour->weight = weight;
         printf("  - New Best Tour\n");
-        print_tour(ti->best_tour, ti->num_cities);
+        //print_tour(ti->best_tour, ti->num_cities);
     }
 }
 
@@ -164,7 +162,7 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
     }
 
     // Note: can replace ti->best_tour_cost with ti->best_tour->weight
-    if (currentWeight >= ti->best_tour_cost && ti->best_tour_cost != -1) {
+    if (currentWeight >= ti->best_tour->weight && ti->best_tour->weight != -1) {
         return;
     }
 
@@ -262,10 +260,9 @@ int main(int argc, char *argv[])
         for (int i = 1; i < num_process; i++) {
             MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            if (best_tour_cost < travelInfo->best_tour_cost) {
-                travelInfo->best_tour_cost = best_tour_cost;
-                memcpy(travelInfo->best_tour->path, best_tour_path, num_cities * sizeof(uint8_t));
+            if (best_tour_cost < travelInfo->best_tour->weight) {
                 travelInfo->best_tour->weight = best_tour_cost;
+                memcpy(travelInfo->best_tour->path, best_tour_path, num_cities * sizeof(uint8_t));
             }
         }
     }
@@ -276,7 +273,7 @@ int main(int argc, char *argv[])
     printf("All Possible Paths\n");
     printf("************************************\n");
     printf("General Info\n");
-    printf("  - Best Tour Cost: %d\n", travelInfo->best_tour_cost);
+    printf("  - Best Tour Cost: %d\n", travelInfo->best_tour->weight);
     printf("************************************\n");
     
     printf("\n");
