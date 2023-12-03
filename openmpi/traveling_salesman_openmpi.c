@@ -242,6 +242,8 @@ int main(int argc, char *argv[])
         gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][i]);
 
     }
+    
+    MPI_Barrier(MPI_COMM_WORLD);
 
     if (id != 0) {
         MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
