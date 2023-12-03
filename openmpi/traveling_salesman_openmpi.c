@@ -248,17 +248,19 @@ int main(int argc, char *argv[])
         if (id != 0 && size > 0) {
             MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
             MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
-        } else {
-            int best_tour_cost;
-            uint8_t best_tour_path[num_cities];
-            for (int i = 1; i < num_process; i++) {
-                if (BLOCK_SIZE(i, num_process, num_cities - 1) > 0) {
-                    MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    if (best_tour_cost < travelInfo->best_tour->weight) {
-                        travelInfo->best_tour->weight = best_tour_cost;
-                        memcpy(travelInfo->best_tour->path, best_tour_path, num_cities * sizeof(uint8_t));
-                    }
+        }
+    }
+
+    if(id == 0){
+        int best_tour_cost;
+        uint8_t best_tour_path[num_cities];
+        for (int i = 1; i < num_process; i++) {
+            if (BLOCK_SIZE(i, num_process, num_cities - 1) > 0) {
+                MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                if (best_tour_cost < travelInfo->best_tour->weight) {
+                    travelInfo->best_tour->weight = best_tour_cost;
+                    memcpy(travelInfo->best_tour->path, best_tour_path, num_cities * sizeof(uint8_t));
                 }
             }
         }
