@@ -139,7 +139,7 @@ void update_best_tour(TravelInfo *ti, uint8_t path[], int weight) {
     if (ti->best_tour->weight == -1 || weight < ti->best_tour->weight) {
         memcpy(ti->best_tour->path, path, ti->num_cities * sizeof(uint8_t));
         ti->best_tour->weight = weight;
-        printf("  - New Best Tour\n");
+        // printf("  - New Best Tour\n");
         //print_tour(ti->best_tour, ti->num_cities);
     }
 }
