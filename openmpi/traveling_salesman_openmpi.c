@@ -278,7 +278,7 @@ int main(int argc, char *argv[])
     if (sanityWeight == travelInfo->best_tour->weight) {
         printf("  - Sanity Check Passed!\n");
     } else {
-        printf(" !- Sanity Check FAILED: Expected: %d, Got: %d\n", sanityWeight, travelInfo->best_tour->weigth);
+        printf(" !- Sanity Check FAILED: Expected: %d, Got: %d\n", sanityWeight, travelInfo->best_tour->weight);
     }
     printf("************************************\n");
         
