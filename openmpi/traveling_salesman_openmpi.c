@@ -223,9 +223,9 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &num_process);
 
-    int low = 1 + BLOCK_LOW(id, num_process, travelInfo->max_tours - 1);
-    int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->max_tours - 1);
-    int size = BLOCK_SIZE(id, num_process, travelInfo->max_tours - 1);
+    int low = 1 + BLOCK_LOW(id, num_process, travelInfo->num_cities - 1);
+    int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->num_cities - 1);
+    int size = BLOCK_SIZE(id, num_process, travelInfo->num_cities - 1);
 
 
     for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
