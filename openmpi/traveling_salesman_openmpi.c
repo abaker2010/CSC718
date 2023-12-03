@@ -125,10 +125,10 @@ void swap(uint8_t *a, uint8_t *b) {
 }
 
 // Function to calculate the total weight of a path
-int check_path_cost(TravelInfo *ti, int path[])
+int check_path_cost(TravelInfo *ti, uint8_t path[])
 {
     int weight = 0;
-    for (int i = 0; i < ti->num_cities - 1; i++) {
+    for (uint8_t i = 0; i < ti->num_cities - 1; i++) {
         weight += ti->matrix[path[i]][path[i + 1]];
     }
     weight += ti->matrix[path[ti->num_cities - 1]][path[0]]; // Return to the starting city
