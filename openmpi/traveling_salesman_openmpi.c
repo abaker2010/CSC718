@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
     int size = BLOCK_SIZE(id, num_process, travelInfo->max_tours - 1);
 
 
-    for (uint8_t i = low; i <= high; i++) {
+    for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
         // printf("  - Process %d: %d\n", id, i);
 
         if (starting_tour[1] != i) {
