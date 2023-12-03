@@ -256,8 +256,10 @@ int main(int argc, char *argv[])
         uint8_t best_tour_path[num_cities];
         for (int i = 1; i < num_process; i++) {
             if (BLOCK_SIZE(i, num_process, (int)(num_cities) - 1) > 0) {
+                printf("Receiving from process %d...\n", i);
                 MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                printf("Received Succesfully!\n");
                 if (best_tour_cost < travelInfo->best_tour->weight) {
                     travelInfo->best_tour->weight = best_tour_cost;
                     memcpy(travelInfo->best_tour->path, best_tour_path, num_cities * sizeof(uint8_t));
