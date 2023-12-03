@@ -274,6 +274,12 @@ int main(int argc, char *argv[])
     printf("************************************\n");
     // Tour *best_tours = get_best_tours(travelInfo);
     print_tour(travelInfo->best_tour, travelInfo->num_cities);
+    int sanityWeight = check_path_cost(travelInfo, travelInfo->best_tour->path);
+    if (sanityWeight == travelInfo->best_tour->weight) {
+        printf("  - Sanity Check Passed!\n");
+    } else {
+        printf(" !- Sanity Check FAILED: Expected: %d, Got: %d\n", sanityWeight, travelInfo->best_tour->weigth);
+    }
     printf("************************************\n");
         
     return 0;
