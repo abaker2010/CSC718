@@ -239,7 +239,8 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        gen_perms(travelInfo, starting_tour, 1, 0);
+        // gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][i]);
+        gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][starting_tour[1]]);
 
     }
     
