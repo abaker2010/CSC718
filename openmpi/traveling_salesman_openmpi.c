@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
     int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->num_cities - 1);
     int size = BLOCK_SIZE(id, num_process, travelInfo->num_cities - 1);
 
-    if (low < travelInfo->num_cities) {
+    if (low < (int)travelInfo->num_cities) {
         for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
             // printf("  - Process %d: %d\n", id, i);
 
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
         int best_tour_cost;
         uint8_t best_tour_path[num_cities];
         for (int i = 1; i < num_process; i++) {
-            if (BLOCK_SIZE(i, num_process, num_cities - 1) > 0) {
+            if (BLOCK_SIZE(i, num_process, (int)num_cities - 1) > 0) {
                 MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 if (best_tour_cost < travelInfo->best_tour->weight) {
