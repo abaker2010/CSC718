@@ -241,6 +241,8 @@ int main(int argc, char *argv[])
                 }
             }
             // gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][i]);
+            printf("  - Process %d: %d\n", id, i);
+            fflush(stdout);
             gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][starting_tour[1]]);
 
         }
