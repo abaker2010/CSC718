@@ -243,7 +243,9 @@ int main(int argc, char *argv[])
     int low = 1 + BLOCK_LOW(id, num_process, travelInfo->num_cities - 1);
     int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->num_cities - 1);
     int size = BLOCK_SIZE(id, num_process, travelInfo->num_cities - 1);
-
+    printf("Process %d: low: %d, high: %d, size: %d\n", id, low, high, size);
+    fflush(stdout);
+    
     for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
         if (starting_tour[1] != i) {
             for (uint8_t j = 2; j < num_cities; j++) {
