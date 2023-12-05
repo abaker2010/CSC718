@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     if (argc != 2)
     {
         printf("Usage: %s <input file>\n", argv[0]);
-        MPI_finalize();
+        MPI_Finalize();
         exit(1);
     }
 
