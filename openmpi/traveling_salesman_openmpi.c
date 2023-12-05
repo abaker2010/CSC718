@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
     int size = BLOCK_SIZE(id, num_process, travelInfo->num_cities - 1);
     printf("Process %d: low: %d, high: %d, size: %d\n", id, low, high, size);
     fflush(stdout);
-    
+
     for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
         if (starting_tour[1] != i) {
             for (uint8_t j = 2; j < num_cities; j++) {
@@ -291,31 +291,31 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("Finalizing MPI\n");
-    fflush(stdout); 
-    MPI_Finalize();
-
-    printf("\n");
-    printf("************************************\n");
-    printf("All Possible Paths\n");
-    printf("************************************\n");
-    printf("General Info\n");
-    printf("  - Best Tour Cost: %d\n", travelInfo->best_tour->weight);
-    printf("************************************\n");
-    
-    printf("\n");
-    printf("************************************\n");
-    printf("Best Tour Paths\n");
-    printf("************************************\n");
-    // Tour *best_tours = get_best_tours(travelInfo);
-    print_tour(travelInfo->best_tour, travelInfo->num_cities);
-    int sanityWeight = check_path_cost(travelInfo, travelInfo->best_tour->path);
-    if (sanityWeight == travelInfo->best_tour->weight) {
-        printf("  - Sanity Check Passed!\n");
-    } else {
-        printf(" !- Sanity Check FAILED: Expected: %d, Got: %d\n", sanityWeight, travelInfo->best_tour->weight);
-    }
-    printf("************************************\n");
+    if(id == 0){
+        printf("Finalizing MPI\n");
+        fflush(stdout); 
+        printf("\n");
+        printf("************************************\n");
+        printf("All Possible Paths\n");
+        printf("************************************\n");
+        printf("General Info\n");
+        printf("  - Best Tour Cost: %d\n", travelInfo->best_tour->weight);
+        printf("************************************\n");
         
+        printf("\n");
+        printf("************************************\n");
+        printf("Best Tour Paths\n");
+        printf("************************************\n");
+        // Tour *best_tours = get_best_tours(travelInfo);
+        print_tour(travelInfo->best_tour, travelInfo->num_cities);
+        int sanityWeight = check_path_cost(travelInfo, travelInfo->best_tour->path);
+        if (sanityWeight == travelInfo->best_tour->weight) {
+            printf("  - Sanity Check Passed!\n");
+        } else {
+            printf(" !- Sanity Check FAILED: Expected: %d, Got: %d\n", sanityWeight, travelInfo->best_tour->weight);
+        }
+        printf("************************************\n");
+    }
+    MPI_Finalize();
     return 0;
 }
