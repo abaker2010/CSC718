@@ -247,8 +247,8 @@ int main(int argc, char *argv[])
         
 
         if (id != 0 && size > 0) {
-            MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-            MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
+            MPI_Isend(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            MPI_Isend(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
         }
     }
 
@@ -261,8 +261,8 @@ int main(int argc, char *argv[])
             if (BLOCK_SIZE(i, num_process, (int)(num_cities) - 1) > 0) {
                 printf("Receiving from process %d...\n", i);
                 fflush(stdout);
-                MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Irecv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Irecv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 printf("Received Succesfully!\n");
                 fflush(stdout);
                 if (best_tour_cost < travelInfo->best_tour->weight) {
