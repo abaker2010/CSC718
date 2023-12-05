@@ -217,7 +217,8 @@ int main(int argc, char *argv[])
 
     printf(" - Max Tours: %f\n", travelInfo->max_tours);
     printf("************************************\n");
-
+    fflush(stdout);
+    
     int id, num_process;
     MPI_Init(&argc, &argv);
     printf("Initialized MPI\n");
