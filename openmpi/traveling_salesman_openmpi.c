@@ -258,28 +258,24 @@ int main(int argc, char *argv[])
 
     }
     
-
     if (id != 0 && size > 0) {
-        printf("Sending from process %d...\n", id);
-        fflush(stdout);
-        MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
-    }
-    // }
-
-    if(id == 0){
+        int recv_data; // Add a variable to receive data
+        MPI_Sendrecv(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, 
+                    &recv_data, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Sendrecv(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, 
+                    recv_data, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    } else if (id == 0) {
         int best_tour_cost;
         uint8_t best_tour_path[num_cities];
-        printf("In process 0\n");
-        fflush(stdout);
         for (int i = 1; i < num_process; i++) {
-            printf("In loop\n");
-            fflush(stdout);
             if (BLOCK_SIZE(i, num_process, (int)(num_cities) - 1) > 0) {
                 printf("Receiving from process %d...\n", i);
                 fflush(stdout);
-                MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                int send_data; // Add a variable to send data
+                MPI_Sendrecv(&send_data, 1, MPI_INT, i, 0, 
+                            &best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Sendrecv(send_data, num_cities, MPI_UINT8_T, i, 0, 
+                            best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 printf("Received Succesfully!\n");
                 fflush(stdout);
                 if (best_tour_cost < travelInfo->best_tour->weight) {
@@ -289,6 +285,36 @@ int main(int argc, char *argv[])
             }
         }
     }
+    // if (id != 0 && size > 0) {
+    //     printf("Sending from process %d...\n", id);
+    //     fflush(stdout);
+    //     MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    //     MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
+    // }
+    // // }
+
+    // if(id == 0){
+    //     int best_tour_cost;
+    //     uint8_t best_tour_path[num_cities];
+    //     printf("In process 0\n");
+    //     fflush(stdout);
+    //     for (int i = 1; i < num_process; i++) {
+    //         printf("In loop\n");
+    //         fflush(stdout);
+    //         if (BLOCK_SIZE(i, num_process, (int)(num_cities) - 1) > 0) {
+    //             printf("Receiving from process %d...\n", i);
+    //             fflush(stdout);
+    //             MPI_Recv(&best_tour_cost, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    //             MPI_Recv(best_tour_path, num_cities, MPI_UINT8_T, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    //             printf("Received Succesfully!\n");
+    //             fflush(stdout);
+    //             if (best_tour_cost < travelInfo->best_tour->weight) {
+    //                 travelInfo->best_tour->weight = best_tour_cost;
+    //                 memcpy(travelInfo->best_tour->path, best_tour_path, num_cities * sizeof(uint8_t));
+    //             }
+    //         }
+    //     }
+    // }
 
     printf("Finalizing MPI\n");
     fflush(stdout); 
