@@ -172,16 +172,8 @@ int main(int argc, char *argv[])
 {
     int id, num_process;
     MPI_Init(&argc, &argv);
-    printf("Initialized MPI\n");
-    fflush(stdout);
-
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
-    printf("Got rank\n");
-    fflush(stdout);
-
     MPI_Comm_size(MPI_COMM_WORLD, &num_process);
-    printf("Got size\n");   
-    fflush(stdout);
 
     if (argc != 2)
     {
@@ -195,7 +187,8 @@ int main(int argc, char *argv[])
     if (file == NULL)
     {
         printf("Could not open file input.txt\n");
-        return 1;
+        MPI_Finalize();
+        exit(1);
     }
 
     fscanf(file, "%" SCNu8, &num_cities);
@@ -211,24 +204,27 @@ int main(int argc, char *argv[])
     }
     fclose(file);
 
-    printf("\n");
-    printf("************************************\n");
-    printf("City Cost Matrix\n");
-    printf("************************************\n");
-    for (i = 0; i < num_cities; i++)
-    {
-        
-        printf("  City (%3u) : ", i);
-        for (j = 0; j < num_cities; j++)
+    if (id == 0) {
+        printf("\n");
+        printf("************************************\n");
+        printf("City Cost Matrix\n");
+        printf("************************************\n");
+        for (i = 0; i < num_cities; i++)
         {
-            printf("%3d ", matrix[i][j]);
+            
+            printf("  City (%3u) : ", i);
+            for (j = 0; j < num_cities; j++)
+            {
+                printf("%3d ", matrix[i][j]);
+            }
+            printf("\n");
         }
         printf("\n");
+        printf("************************************\n");
+        printf("Generating Paths / Weights\n");
+        printf("************************************\n");
     }
-    printf("\n");
-    printf("************************************\n");
-    printf("Generating Paths / Weights\n");
-    printf("************************************\n");
+    
     
     TravelInfo *travelInfo = newTravelInfo(num_cities, matrix);
     
@@ -237,23 +233,18 @@ int main(int argc, char *argv[])
         starting_tour[i] = i;
     }
 
-    printf(" - Max Tours: %f\n", travelInfo->max_tours);
-    printf("************************************\n");
-    fflush(stdout);
-    
+    if(id == 0) {
+        printf(" - Max Tours: %f\n", travelInfo->max_tours);
+        printf("************************************\n");
+        fflush(stdout);
+    }
     
     
     int low = 1 + BLOCK_LOW(id, num_process, travelInfo->num_cities - 1);
     int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->num_cities - 1);
     int size = BLOCK_SIZE(id, num_process, travelInfo->num_cities - 1);
 
-    printf("Process %d: low: %d, high: %d, size: %d\n", id, low, high, size);
-    fflush(stdout);
-
-    // if (low < (int)(travelInfo->num_cities)) {
     for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
-        // printf("  - Process %d: %d\n", id, i);
-        // fflush(stdout);
         if (starting_tour[1] != i) {
             for (uint8_t j = 2; j < num_cities; j++) {
                 if (starting_tour[j] == i) {
@@ -262,9 +253,6 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        // gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][i]);
-        printf("  - Process %d: %d\n", id, i);
-        fflush(stdout);
         gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][starting_tour[1]]);
 
     }
