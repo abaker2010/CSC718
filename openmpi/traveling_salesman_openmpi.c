@@ -220,18 +220,28 @@ int main(int argc, char *argv[])
 
     int id, num_process;
     MPI_Init(&argc, &argv);
-    
-    MPI_Comm_rank(MPI_COMM_WORLD, &id);
-    MPI_Comm_size(MPI_COMM_WORLD, &num_process);
+    printf("Initialized MPI\n");
+    fflush(stdout);
 
+    MPI_Comm_rank(MPI_COMM_WORLD, &id);
+    printf("Got rank\n");
+    fflush(stdout);
+
+    MPI_Comm_size(MPI_COMM_WORLD, &num_process);
+    printf("Got size\n");   
+    fflush(stdout);
+    
     int low = 1 + BLOCK_LOW(id, num_process, travelInfo->num_cities - 1);
     int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->num_cities - 1);
     int size = BLOCK_SIZE(id, num_process, travelInfo->num_cities - 1);
 
+    printf("Process %d: low: %d, high: %d, size: %d\n", id, low, high, size);
+    fflush(stdout);
+
     // if (low < (int)(travelInfo->num_cities)) {
     for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
         // printf("  - Process %d: %d\n", id, i);
-
+        // fflush(stdout);
         if (starting_tour[1] != i) {
             for (uint8_t j = 2; j < num_cities; j++) {
                 if (starting_tour[j] == i) {
@@ -249,6 +259,8 @@ int main(int argc, char *argv[])
     
 
     if (id != 0 && size > 0) {
+        printf("Sending from process %d...\n", id);
+        fflush(stdout);
         MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
     }
@@ -257,6 +269,8 @@ int main(int argc, char *argv[])
     if(id == 0){
         int best_tour_cost;
         uint8_t best_tour_path[num_cities];
+        printf("In process 0\n");
+        fflush(stdout);
         for (int i = 1; i < num_process; i++) {
             printf("In loop\n");
             fflush(stdout);
@@ -274,6 +288,9 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    printf("Finalizing MPI\n");
+    fflush(stdout); 
     MPI_Finalize();
 
     printf("\n");
