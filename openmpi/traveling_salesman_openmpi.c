@@ -228,31 +228,31 @@ int main(int argc, char *argv[])
     int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->num_cities - 1);
     int size = BLOCK_SIZE(id, num_process, travelInfo->num_cities - 1);
 
-    if (low < (int)(travelInfo->num_cities)) {
-        for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
-            // printf("  - Process %d: %d\n", id, i);
+    // if (low < (int)(travelInfo->num_cities)) {
+    for (uint8_t i = (uint8_t)low; i <= (uint8_t)high; i++) {
+        // printf("  - Process %d: %d\n", id, i);
 
-            if (starting_tour[1] != i) {
-                for (uint8_t j = 2; j < num_cities; j++) {
-                    if (starting_tour[j] == i) {
-                        swap(&starting_tour[1], &starting_tour[j]);
-                        break;
-                    }
+        if (starting_tour[1] != i) {
+            for (uint8_t j = 2; j < num_cities; j++) {
+                if (starting_tour[j] == i) {
+                    swap(&starting_tour[1], &starting_tour[j]);
+                    break;
                 }
             }
-            // gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][i]);
-            printf("  - Process %d: %d\n", id, i);
-            fflush(stdout);
-            gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][starting_tour[1]]);
-
         }
-        
+        // gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][i]);
+        printf("  - Process %d: %d\n", id, i);
+        fflush(stdout);
+        gen_perms(travelInfo, starting_tour, 2, travelInfo->matrix[0][starting_tour[1]]);
 
-        if (id != 0 && size > 0) {
-            MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-            MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
-        }
     }
+    
+
+    if (id != 0 && size > 0) {
+        MPI_Send(&travelInfo->best_tour->weight, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(travelInfo->best_tour->path, num_cities, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
+    }
+    // }
 
     if(id == 0){
         int best_tour_cost;
