@@ -218,8 +218,9 @@ int main(int argc, char *argv[])
     printf(" - Max Tours: %f\n", travelInfo->max_tours);
     printf("************************************\n");
 
-    MPI_Init(&argc, &argv);
     int id, num_process;
+    MPI_Init(&argc, &argv);
+    
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &num_process);
 
