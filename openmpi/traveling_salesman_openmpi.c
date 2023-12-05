@@ -170,25 +170,47 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
 
 int main(int argc, char *argv[])
 {
+    int id, num_process;
+    MPI_Init(&argc, &argv);
+    printf("Initialized MPI\n");
+    fflush(stdout);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &id);
+    printf("Got rank\n");
+    fflush(stdout);
+
+    MPI_Comm_size(MPI_COMM_WORLD, &num_process);
+    printf("Got size\n");   
+    fflush(stdout);
+
+    if (argc != 2)
+    {
+        printf("Usage: %s <input file>\n", argv[0]);
+        MPI_finalize();
+        exit(1);
+    }
+
     uint8_t i, j, num_cities;
+    FILE *file = fopen(argv[1], "r");
+    if (file == NULL)
+    {
+        printf("Could not open file input.txt\n");
+        return 1;
+    }
 
-    printf("Enter Total Number of Cities:\t");
-    scanf("%" SCNu8, &num_cities);
+    fscanf(file, "%" SCNu8, &num_cities);
 
-    // Calculate the number of permutations (numCities!)
-    //int numPermutations = factorial(num_cities);
     int matrix[num_cities][num_cities];
-    //int tours[numPermutations][num_cities];
 
-    printf("\nEnter Cost Matrix\n");
     for (i = 0; i < num_cities; i++)
     {
-        printf("\nEnter %d Elements in Row[%d]\n", num_cities, i + 1);
         for (j = 0; j < num_cities; j++)
         {
-            scanf("%d", &matrix[i][j]);
+            fscanf(file, "%d", &matrix[i][j]);
         }
     }
+    fclose(file);
+
     printf("\n");
     printf("************************************\n");
     printf("City Cost Matrix\n");
@@ -219,18 +241,7 @@ int main(int argc, char *argv[])
     printf("************************************\n");
     fflush(stdout);
     
-    int id, num_process;
-    MPI_Init(&argc, &argv);
-    printf("Initialized MPI\n");
-    fflush(stdout);
-
-    MPI_Comm_rank(MPI_COMM_WORLD, &id);
-    printf("Got rank\n");
-    fflush(stdout);
-
-    MPI_Comm_size(MPI_COMM_WORLD, &num_process);
-    printf("Got size\n");   
-    fflush(stdout);
+    
     
     int low = 1 + BLOCK_LOW(id, num_process, travelInfo->num_cities - 1);
     int high = 1 + BLOCK_HIGH(id, num_process, travelInfo->num_cities - 1);
