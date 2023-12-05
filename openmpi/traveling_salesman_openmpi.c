@@ -255,6 +255,8 @@ int main(int argc, char *argv[])
         int best_tour_cost;
         uint8_t best_tour_path[num_cities];
         for (int i = 1; i < num_process; i++) {
+            printf("In loop\n");
+            fflush(stdout);
             if (BLOCK_SIZE(i, num_process, (int)(num_cities) - 1) > 0) {
                 printf("Receiving from process %d...\n", i);
                 fflush(stdout);
