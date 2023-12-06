@@ -161,7 +161,7 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
             tours[currentThread].weight = currentWeight;
             memcpy(tours[currentThread].path, path, ti->num_cities * sizeof(uint8_t));
             printf("  - New Best Tour\n");
-            print_tour(tours[currentThread].path, ti->num_cities);
+            print_tour(tours[currentThread], ti->num_cities);
         }
 
         return;
