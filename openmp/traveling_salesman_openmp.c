@@ -4,7 +4,11 @@
 #include <inttypes.h>
 #include <string.h>
 #include <sys/types.h>
+#include <time.h>
 
+clock_t get_time() {
+    return clock();
+}
 unsigned int factorial(unsigned int n)
 {
     if (n == 1) {
@@ -175,6 +179,8 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
 int main()
 {
     uint8_t i, j, num_cities;
+    clock_t start, end;
+    double cpu_time_used;
 
     printf("Enter Total Number of Cities:\t");
     scanf("%" SCNu8, &num_cities);
@@ -211,6 +217,8 @@ int main()
     printf("************************************\n");
     printf("Generating Paths / Weights\n");
     printf("************************************\n");
+
+    start = get_time();
     
     TravelInfo *travelInfo = newTravelInfo(num_cities, matrix);
     
@@ -223,6 +231,7 @@ int main()
     printf("************************************\n");
 
     gen_perms(travelInfo, starting_tour, 1, 0);
+    end = get_time();
     printf("\n");
     printf("************************************\n");
     printf("All Possible Paths\n");
@@ -238,6 +247,9 @@ int main()
     // Tour *best_tours = get_best_tours(travelInfo);
     print_tour(travelInfo->best_tour, travelInfo->num_cities);
     printf("************************************\n");
-        
+    int max_threads = omp_get_max_threads();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Run Time: %f seconds\n", (cpu_time_used / max_threads));
+
     return 0;
 }
