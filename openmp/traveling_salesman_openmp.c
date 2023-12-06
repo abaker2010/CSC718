@@ -157,25 +157,14 @@ void set_best_tour_cost(TravelInfo *ti, int weight) {
 // Function to generate all possible paths, get weight of each path, and store the best path
 void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int currentWeight, Tour tours[], int currentThread) {
     if (currentIndex == ti->num_cities - 1) {
-         if (tours[currentThread].weight == -1 || weight < tours[currentThread].weight) {
-            // note: ti->best_tour_cost is not needed
-            // ti->best_tour_cost = weight;
-            tours[currentThread].weight = weight;
+         if (tours[currentThread].weight == -1 || currentWeight < tours[currentThread].weight) {
+            tours[currentThread].weight = currentWeight;
             memcpy(tours[currentThread].path, path, ti->num_cities * sizeof(uint8_t));
-            // memcpy(ti->best_tour->path, path, ti->num_cities * sizeof(uint8_t));
-            // ti->best_tour->weight = weight;
-            // tours[currentThread].weight = weight;
             printf("  - New Best Tour\n");
             print_tour(tours[currentThread].path, ti->num_cities);
         }
 
         return;
-        // int totalWeight = currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]];
-        // #pragma omp critical
-        // {
-        //     update_best_tour(ti, path, totalWeight);
-        // }
-        // return;
     }
 
     if (currentWeight >= tours[currentThread].weight && tours[currentThread].weight != -1) {
