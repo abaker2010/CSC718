@@ -249,8 +249,8 @@ int main()
 
     for (int i = 0; i < num_procs; i++) {
         best_tours[i].path = (uint8_t *) malloc(sizeof(uint8_t) * num_cities);
-        memcpy(best_tours[i].path, ti->best_tour->path, num_cities * sizeof(uint8_t));
-        best_tours[i].weight = ti->best_tour->weight;
+        memcpy(best_tours[i].path, travelInfo->best_tour->path, num_cities * sizeof(uint8_t));
+        best_tours[i].weight = travelInfo->best_tour->weight;
     }   
 
 
@@ -260,6 +260,14 @@ int main()
     
 
     gen_perms(travelInfo, starting_tour, 1, 0, best_tours, -1);
+
+    for (int i = 0; i < num_procs; i++) {
+        if (best_tours[i].weight < travelInfo->best_tour->weight) {
+            memcpy(travelInfo->best_tour->path, best_tours[i].path, num_cities * sizeof(uint8_t));
+            travelInfo->best_tour->weight = best_tours[i].weight;
+        }
+    }
+    
     end = get_time();
     printf("\n");
     printf("************************************\n");
