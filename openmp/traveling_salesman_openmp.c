@@ -248,7 +248,7 @@ int main()
 
     
 
-    gen_perms(travelInfo, starting_tour, 1, 0, best_tours, -1);
+    gen_perms(travelInfo, starting_tour, 1, 0, best_tours, 0);
 
     for (int i = 0; i < num_procs; i++) {
         if (best_tours[i].weight < travelInfo->best_tour->weight) {
