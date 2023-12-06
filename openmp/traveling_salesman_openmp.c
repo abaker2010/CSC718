@@ -10,6 +10,7 @@
 clock_t get_time() {
     return clock();
 }
+
 unsigned int factorial(unsigned int n)
 {
     if (n == 1) {
@@ -154,17 +155,18 @@ void set_best_tour_cost(TravelInfo *ti, int weight) {
 }
 
 // Function to generate all possible paths, get weight of each path, and store the best path
-void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int currentWeight) {
+void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int currentWeight, Tour tours[], int currentThread) {
     if (currentIndex == ti->num_cities - 1) {
-        int totalWeight = currentWeight + ti->matrix[path[currentIndex - 1]][path[currentIndex]] + ti->matrix[path[currentIndex]][path[0]];
-        #pragma omp critical
-        {
-            update_best_tour(ti, path, totalWeight);
+         if (tours[currentThread].weight == -1 || currentWeight < tours[currentThread].weight) {
+            tours[currentThread].weight = currentWeight;
+            memcpy(tours[currentThread].path, path, ti->num_cities * sizeof(uint8_t));
+            printf("  - New Best Tour\n");
+            print_tour(&(tours[currentThread]), ti->num_cities);
         }
         return;
     }
 
-    if (currentWeight >= ti->best_tour_cost && ti->best_tour_cost != -1) {
+    if (currentWeight >= tours[currentThread].weight && tours[currentThread].weight != -1) {
         return;
     }
 
@@ -173,7 +175,8 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
         uint8_t newPath[ti->num_cities];
         memcpy(newPath, path, ti->num_cities * sizeof(uint8_t));
         swap(&newPath[currentIndex], &newPath[i]);
-        gen_perms(ti, newPath, currentIndex + 1, currentWeight + ti->matrix[newPath[currentIndex - 1]][newPath[currentIndex]]);
+        gen_perms(ti, newPath, currentIndex + 1, currentWeight + ti->matrix[newPath[currentIndex - 1]][newPath[currentIndex]], tours, omp_get_thread_num());
+        swap(&newPath[currentIndex], &newPath[i]);
     }
 }   
 
@@ -182,6 +185,9 @@ int main()
     uint8_t i, j, num_cities;
     clock_t start, end;
     double cpu_time_used;
+    int num_procs = omp_get_num_procs();
+
+    omp_set_num_threads(num_procs);
 
     printf("Enter Total Number of Cities:\t");
     scanf("%" SCNu8, &num_cities);
@@ -228,10 +234,29 @@ int main()
         starting_tour[i] = i;
     }
 
+    Tour best_tours[num_procs]; // array of best tours for each thread
+
+    for (int i = 0; i < num_procs; i++) {
+        best_tours[i].path = (uint8_t *) malloc(sizeof(uint8_t) * num_cities);
+        memcpy(best_tours[i].path, travelInfo->best_tour->path, num_cities * sizeof(uint8_t));
+        best_tours[i].weight = travelInfo->best_tour->weight;
+    }   
+
+
     printf(" - Max Tours: %f\n", travelInfo->max_tours);
     printf("************************************\n");
 
-    gen_perms(travelInfo, starting_tour, 1, 0);
+    
+
+    gen_perms(travelInfo, starting_tour, 1, 0, best_tours, 0);
+
+    for (int i = 0; i < num_procs; i++) {
+        if (best_tours[i].weight < travelInfo->best_tour->weight) {
+            memcpy(travelInfo->best_tour->path, best_tours[i].path, num_cities * sizeof(uint8_t));
+            travelInfo->best_tour->weight = best_tours[i].weight;
+        }
+    }
+
     end = get_time();
     printf("\n");
     printf("************************************\n");
