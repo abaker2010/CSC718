@@ -15,6 +15,8 @@ Different impelementations of the traveling salesman problem to compare the perf
   - README.md
   - traveling_salesman_mpi.c
 
+NOTE: Each of the above directories contains a README.md file that describes how to compile and run the program. 
+
 ## Test Files Expected Output
 
 - The expected output for the test files is in this general format:
