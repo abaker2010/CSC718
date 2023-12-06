@@ -15,7 +15,8 @@ Different impelementations of the traveling salesman problem to compare the perf
   - README.md
   - traveling_salesman_mpi.c
 
-NOTE: Each of the above directories contains a README.md file that describes how to compile and run the program. 
+NOTE: Each of the above directories contains a README.md file that describes how to compile and run the program. Additionally, each directory contains a Makefile that can be used to compile the program.
+
 
 ## Test Files Expected Output
 
