@@ -187,7 +187,7 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
         uint8_t newPath[ti->num_cities];
         memcpy(newPath, path, ti->num_cities * sizeof(uint8_t));
         swap(&newPath[currentIndex], &newPath[i]);
-        gen_perms(ti, newPath, currentIndex + 1, currentWeight + ti->matrix[newPath[currentIndex - 1]][newPath[currentIndex]], omp_get_thread_num());
+        gen_perms(ti, newPath, currentIndex + 1, currentWeight + ti->matrix[newPath[currentIndex - 1]][newPath[currentIndex]], tours, omp_get_thread_num());
     }
 }   
 
@@ -267,7 +267,7 @@ int main()
             travelInfo->best_tour->weight = best_tours[i].weight;
         }
     }
-    
+
     end = get_time();
     printf("\n");
     printf("************************************\n");
