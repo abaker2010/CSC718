@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+
 #define BLOCK_LOW(id, p, n) ((id) * (n) / (p))
 #define BLOCK_HIGH(id, p, n) (BLOCK_LOW((id) + 1, p, n) - 1)
 #define BLOCK_SIZE(id, p, n) (BLOCK_LOW((id) + 1, p, n) - BLOCK_LOW(id, p, n))
@@ -171,6 +172,7 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
 int main(int argc, char *argv[])
 {
     int id, num_process;
+    double elapsed_time;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &num_process);
@@ -226,6 +228,8 @@ int main(int argc, char *argv[])
     }
     
     
+    MPI_Barrier(MPI_COMM_WORLD);
+    elapsed_time = -MPI_Wtime();
     TravelInfo *travelInfo = newTravelInfo(num_cities, matrix);
     
     uint8_t starting_tour[num_cities];
@@ -316,6 +320,8 @@ int main(int argc, char *argv[])
         }
         printf("************************************\n");
     }
+    elapsed_time += MPI_Wtime();
+    printf("Run Time: %f seconds\n", elapsed_time);
     MPI_Finalize();
     return 0;
 }

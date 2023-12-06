@@ -13,5 +13,5 @@ mpicc -o tsp_openmpi tsp.c
 ## How to run the solver with a given input file
 - To run the solver, use the following command:
 ```
-mpirun -np <number_of_processors> ./tsp_openmpi <input_file>
+mpirun -machinefile machinefile -np <number_of_processors> ./tsp_openmpi <input_file>
 ```
