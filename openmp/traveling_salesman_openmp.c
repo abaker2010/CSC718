@@ -163,7 +163,6 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
             printf("  - New Best Tour\n");
             print_tour(&(tours[currentThread]), ti->num_cities);
         }
-
         return;
     }
 
@@ -177,6 +176,7 @@ void gen_perms(TravelInfo *ti, uint8_t path[], uint8_t currentIndex, int current
         memcpy(newPath, path, ti->num_cities * sizeof(uint8_t));
         swap(&newPath[currentIndex], &newPath[i]);
         gen_perms(ti, newPath, currentIndex + 1, currentWeight + ti->matrix[newPath[currentIndex - 1]][newPath[currentIndex]], tours, omp_get_thread_num());
+        swap(&newPath[currentIndex], &newPath[i]);
     }
 }   
 
