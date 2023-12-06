@@ -13,7 +13,7 @@ On Mac:
 
 On Linux:
 ```
-
+gcc -fopenmp -o tsp_openmp traveling_salesman_openmp.c 
 ```
 
 ## How to run the solver with a given input file

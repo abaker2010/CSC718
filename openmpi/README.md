@@ -7,11 +7,11 @@
 ## How to compile
 - To complie the solver, use the following command:
 ```
-mpicc -o tsp tsp.c
+mpicc -o tsp_openmpi tsp.c
 ```
 
 ## How to run the solver with a given input file
 - To run the solver, use the following command:
 ```
-mpirun -np <number_of_processors> ./tsp <input_file>
+mpirun -np <number_of_processors> ./tsp_openmpi <input_file>
 ```
